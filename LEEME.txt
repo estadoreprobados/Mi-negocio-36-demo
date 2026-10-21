@@ -3,7 +3,7 @@
 ## Incluye
 - `index.html`: interfaz principal minimalista.
 - `styles.css`: estilos adaptables a celular, tablet y computadora.
-- `app.js`: productos, costos, ventas, gastos, inventario automático, movimientos de stock, panel de ganancias, gráfica y exportaciones PDF/CSV.
+- `app.js`: productos, costos, ventas, gastos, inventario automático, movimientos de stock, panel de ganancias, gráfica, exportaciones PDF/CSV y selección de moneda por código ISO 4217.
 
 ## Instalación desde Android con GitHub Pages
 1. Abre tu repositorio `estadoreprobados/Mi-negocio-36-demo`.
@@ -18,6 +18,13 @@
 Esta versión utiliza una nueva clave de almacenamiento local: `mpn36_v2_data`. No borra la clave anterior, pero tampoco importa automáticamente datos antiguos porque el formato exacto del código anterior no se ha podido inspeccionar. Antes de sustituir los archivos, conserva una copia del repositorio y exporta el CSV antiguo si la versión anterior permite hacerlo.
 
 Los datos de esta versión se guardan en el navegador del dispositivo. **No se sincronizan entre celulares/tablets ni ofrecen cuentas independientes en la nube.** Para eso falta una etapa posterior con Supabase: autenticación, tablas y reglas de seguridad (RLS). No publiques claves secretas de Supabase en archivos de frontend.
+
+## Selección de moneda
+- Se puede elegir una moneda para esta instalación del negocio desde el panel “Moneda del negocio”.
+- Incluye MXN, USD, EUR, COP, ARS, CLP, PEN, BRL, GBP, JPY, CAD, AUD, CHF, CNY, INR, KRW, PAB, UYU, DOP, GTQ, CRC, BOB, PYG, HNL, NIO, SEK, NOK, NZD, SGD y ZAR.
+- El código ISO elegido se guarda en `mpn36_v2_data` y se usa al mostrar importes, en la gráfica y en los reportes PDF/CSV.
+- Cambiar moneda solo cambia el formato y el código mostrado; **no convierte los importes ni consulta tipos de cambio**. Cambia la moneda solo si todos los importes guardados corresponden a esa moneda.
+- Esta selección aplica a los datos locales de esta instalación. Aún no hay configuración de moneda independiente para múltiples negocios ni usuarios en la nube.
 
 ## Funciones y límites
 - Productos: nombre, materiales, mano de obra, precio, existencias y stock mínimo.
@@ -44,4 +51,5 @@ La utilidad neta estimada se calcula como: ventas - costo de los productos vendi
 - Inicio de sesión real.
 - Sincronización entre dispositivos.
 - Separación segura de varios negocios en la nube.
+- Moneda independiente por cada negocio cuando existan varios negocios en una misma cuenta.
 Esas funciones requieren configurar y probar un backend. No se simulan con un selector de usuario local porque no sería seguridad real.

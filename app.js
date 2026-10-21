@@ -3,17 +3,29 @@
   const KEY = "mpn36_v2_data";
   const $ = id => document.getElementById(id);
   const today = () => new Date().toLocaleDateString("en-CA");
-  const money = n => new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN"}).format(Number(n)||0);
+  const CURRENCY_LOCALES = {
+    MXN:"es-MX", USD:"en-US", EUR:"es-ES", COP:"es-CO", ARS:"es-AR", CLP:"es-CL",
+    PEN:"es-PE", BRL:"pt-BR", GBP:"en-GB", JPY:"ja-JP", CAD:"en-CA", AUD:"en-AU",
+    CHF:"de-CH", CNY:"zh-CN", INR:"en-IN", KRW:"ko-KR", PAB:"es-PA", UYU:"es-UY",
+    DOP:"es-DO", GTQ:"es-GT", CRC:"es-CR", BOB:"es-BO", PYG:"es-PY", HNL:"es-HN",
+    NIO:"es-NI", SEK:"sv-SE", NOK:"nb-NO", NZD:"en-NZ", SGD:"en-SG", ZAR:"en-ZA"
+  };
+  const money = n => {
+    const code = data?.settings?.currency || "MXN";
+    const locale = CURRENCY_LOCALES[code] || "es-MX";
+    try { return new Intl.NumberFormat(locale,{style:"currency",currency:code}).format(Number(n)||0); }
+    catch { return `${code} ${(Number(n)||0).toFixed(2)}`; }
+  };
   const uid = () => (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
   const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   let data = loadData(), salesChart = null;
   function loadData(){
     try {
       const raw = localStorage.getItem(KEY);
-      if(raw){ const d=JSON.parse(raw); return {products:d.products||[],sales:d.sales||[],expenses:d.expenses||[],stockMoves:d.stockMoves||[]}; }
+      if(raw){ const d=JSON.parse(raw); return {...d, products:d.products||[],sales:d.sales||[],expenses:d.expenses||[],stockMoves:d.stockMoves||[],settings:{...(d.settings||{}),currency:(d.settings&&d.settings.currency)||"MXN"}}; }
     } catch(e) { console.error(e); }
     // No se borran ni sobrescriben datos antiguos con nombres de clave desconocidos.
-    return {products:[],sales:[],expenses:[],stockMoves:[]};
+    return {products:[],sales:[],expenses:[],stockMoves:[],settings:{currency:"MXN"}};
   }
   function save(){ localStorage.setItem(KEY, JSON.stringify(data)); renderAll(); }
   function toast(msg){ const el=$("toast"); el.textContent=msg; el.classList.remove("hidden"); setTimeout(()=>el.classList.add("hidden"),2800); }
@@ -71,7 +83,7 @@
     const cost=dates.map(d=>data.sales.filter(s=>s.date===d).reduce((a,s)=>a+s.cost*s.qty,0));
     if(window.Chart){
       if(salesChart) salesChart.destroy();
-      salesChart=new Chart($("salesChart"),{type:"bar",data:{labels,datasets:[{label:"Ventas",data:rev,backgroundColor:"#2563eb",borderRadius:5},{label:"Costo vendido",data:cost,backgroundColor:"#cbd5e1",borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}},scales:{y:{beginAtZero:true,ticks:{callback:v=>"$"+v}}}}});
+      salesChart=new Chart($("salesChart"),{type:"bar",data:{labels,datasets:[{label:"Ventas",data:rev,backgroundColor:"#2563eb",borderRadius:5},{label:"Costo vendido",data:cost,backgroundColor:"#cbd5e1",borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}},scales:{y:{beginAtZero:true,ticks:{callback:v=>`${data.settings.currency} ${v}`}}}}});
     } else {$("salesChart").insertAdjacentHTML("afterend","<p>Para ver la gráfica, abre la página con conexión a internet.</p>");}
   }
   function reportRange(){return {from:$("reportFrom").value,to:$("reportTo").value};}
@@ -157,7 +169,7 @@
   $("reportFrom").addEventListener("change",renderReport);$("reportTo").addEventListener("change",renderReport);
   function csvEscape(v){return '"'+String(v??"").replace(/"/g,'""')+'"';}
   function downloadCsv(){
-    const rows=[["Tipo","Fecha","Producto o concepto","Cantidad","Precio o monto","Costo unitario","Total"]];
+    const rows=[["Moneda ISO 4217",data.settings.currency],[],["Tipo","Fecha","Producto o concepto","Cantidad","Precio o monto","Costo unitario","Total"]];
     data.products.forEach(p=>rows.push(["Producto",p.createdAt,p.name,p.stock,p.price,productCost(p),""]));
     data.sales.forEach(s=>rows.push(["Venta",s.date,s.name,s.qty,s.price,s.cost,s.qty*s.price]));
     data.expenses.forEach(e=>rows.push(["Gasto",e.date,e.name,"",e.amount,"",e.amount]));
@@ -170,7 +182,7 @@
     if(!window.jspdf){toast("No se pudo cargar el generador PDF. Revisa tu conexión a internet.");return;}
     const {from,to}=reportRange(),t=totals(from,to),doc=new window.jspdf.jsPDF();
     doc.setFontSize(18);doc.text("Mi Primer Negocio 36",14,18);
-    doc.setFontSize(11);doc.text("Reporte de actividad",14,27);doc.text(`Periodo: ${from||"Inicio"} al ${to||"Hoy"}`,14,34);
+    doc.setFontSize(11);doc.text(`Reporte de actividad · Moneda: ${data.settings.currency}`,14,27);doc.text(`Periodo: ${from||"Inicio"} al ${to||"Hoy"}`,14,34);
     const lines=[["Ventas totales",money(t.revenue)],["Costo de productos vendidos",money(t.costs)],["Utilidad bruta",money(t.gross)],["Gastos registrados",money(t.expenseTotal)],["Ganancia neta estimada",money(t.net)]];
     let y=47;lines.forEach(([a,b])=>{doc.text(a,14,y);doc.text(b,190,y,{align:"right"});y+=9;});
     y+=5;doc.setFontSize(13);doc.text("Resumen por producto",14,y);y+=8;doc.setFontSize(9);
@@ -180,6 +192,17 @@
     doc.setFontSize(8);doc.text("Reporte estimado para control escolar. Verifica tus registros antes de tomar decisiones.",14,287);
     doc.save("reporte-mi-primer-negocio-36.pdf");
   });
+  const currencySelect = $("currencySelect");
+  if(currencySelect){
+    currencySelect.value = data.settings.currency || "MXN";
+    currencySelect.addEventListener("change",()=>{
+      const chosen = currencySelect.value;
+      if(!CURRENCY_LOCALES[chosen]){currencySelect.value=data.settings.currency||"MXN";toast("Moneda no válida.");return;}
+      data.settings.currency=chosen;
+      save();
+      toast("Moneda actualizada a "+chosen+". No se realizó conversión de importes.");
+    });
+  }
   $("saleDate").value=today();$("expenseDate").value=today();$("reportFrom").value=addDays(today(),-29);$("reportTo").value=today();
   renderAll();
 })();

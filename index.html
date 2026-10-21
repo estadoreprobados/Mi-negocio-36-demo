@@ -21,6 +21,47 @@
 <main class="container">
   <div class="notice" id="storageNotice">Tus datos se guardan en este navegador. Esta versión aún no sincroniza entre dispositivos ni separa cuentas en la nube.</div>
 
+  <section class="panel currency-settings" aria-labelledby="currencyTitle">
+    <div class="panel-title"><div><p class="eyebrow">CONFIGURACIÓN</p><h2 id="currencyTitle">Moneda del negocio</h2></div><span class="muted">Código ISO 4217</span></div>
+    <div class="currency-row">
+      <label for="currencySelect">Selecciona la moneda
+        <select id="currencySelect">
+          <option value="MXN">MXN — Peso mexicano</option>
+          <option value="USD">USD — Dólar estadounidense</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="COP">COP — Peso colombiano</option>
+          <option value="ARS">ARS — Peso argentino</option>
+          <option value="CLP">CLP — Peso chileno</option>
+          <option value="PEN">PEN — Sol peruano</option>
+          <option value="BRL">BRL — Real brasileño</option>
+          <option value="GBP">GBP — Libra esterlina</option>
+          <option value="JPY">JPY — Yen japonés</option>
+          <option value="CAD">CAD — Dólar canadiense</option>
+          <option value="AUD">AUD — Dólar australiano</option>
+          <option value="CHF">CHF — Franco suizo</option>
+          <option value="CNY">CNY — Yuan chino</option>
+          <option value="INR">INR — Rupia india</option>
+          <option value="KRW">KRW — Won surcoreano</option>
+          <option value="PAB">PAB — Balboa panameño</option>
+          <option value="UYU">UYU — Peso uruguayo</option>
+          <option value="DOP">DOP — Peso dominicano</option>
+          <option value="GTQ">GTQ — Quetzal guatemalteco</option>
+          <option value="CRC">CRC — Colón costarricense</option>
+          <option value="BOB">BOB — Boliviano</option>
+          <option value="PYG">PYG — Guaraní paraguayo</option>
+          <option value="HNL">HNL — Lempira hondureño</option>
+          <option value="NIO">NIO — Córdoba nicaragüense</option>
+          <option value="SEK">SEK — Corona sueca</option>
+          <option value="NOK">NOK — Corona noruega</option>
+          <option value="NZD">NZD — Dólar neozelandés</option>
+          <option value="SGD">SGD — Dólar de Singapur</option>
+          <option value="ZAR">ZAR — Rand sudafricano</option>
+        </select>
+      </label>
+      <p class="muted currency-help">Los importes se mostrarán con esta moneda en el panel, ventas, gastos, reportes y exportaciones. Cambiar la moneda solo cambia la forma de mostrar los importes; no convierte cantidades ni actualiza tipos de cambio.</p>
+    </div>
+  </section>
+
   <nav class="tabs" aria-label="Secciones">
     <button class="tab active" data-view="dashboard">Resumen</button>
     <button class="tab" data-view="products">Productos</button>
