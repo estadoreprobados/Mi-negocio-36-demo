@@ -1,0 +1,47 @@
+# Mi Primer Negocio 36 — paquete de mejoras
+
+## Incluye
+- `index.html`: interfaz principal minimalista.
+- `styles.css`: estilos adaptables a celular, tablet y computadora.
+- `app.js`: productos, costos, ventas, gastos, inventario automático, movimientos de stock, panel de ganancias, gráfica y exportaciones PDF/CSV.
+
+## Instalación desde Android con GitHub Pages
+1. Abre tu repositorio `estadoreprobados/Mi-negocio-36-demo`.
+2. Descarga una copia de seguridad de la versión actual antes de cambiar archivos.
+3. En el repositorio, abre cada archivo `index.html`, `styles.css` y `app.js`.
+4. Para cada archivo, usa el lápiz (Edit), selecciona todo y pega el contenido del archivo con el mismo nombre de este ZIP. Guarda con **Commit changes**. También puedes usar **Add file → Upload files** y subir los tres archivos, confirmando que se reemplacen los archivos con el mismo nombre.
+5. Espera a que GitHub Pages publique los cambios y abre:
+   https://estadoreprobados.github.io/Mi-negocio-36-demo/
+6. Si sigue mostrando la versión anterior, recarga la página. En Android puede ayudar abrirla en una pestaña de incógnito o borrar solo la caché del sitio.
+
+## Importante sobre los datos actuales
+Esta versión utiliza una nueva clave de almacenamiento local: `mpn36_v2_data`. No borra la clave anterior, pero tampoco importa automáticamente datos antiguos porque el formato exacto del código anterior no se ha podido inspeccionar. Antes de sustituir los archivos, conserva una copia del repositorio y exporta el CSV antiguo si la versión anterior permite hacerlo.
+
+Los datos de esta versión se guardan en el navegador del dispositivo. **No se sincronizan entre celulares/tablets ni ofrecen cuentas independientes en la nube.** Para eso falta una etapa posterior con Supabase: autenticación, tablas y reglas de seguridad (RLS). No publiques claves secretas de Supabase en archivos de frontend.
+
+## Funciones y límites
+- Productos: nombre, materiales, mano de obra, precio, existencias y stock mínimo.
+- Ventas: descuenta existencias automáticamente y bloquea cantidades superiores al stock.
+- Si eliminas una venta, las unidades se devuelven al inventario.
+- Gastos fijos y variables.
+- Panel de ventas, costo de productos vendidos, utilidad bruta y ganancia neta estimada.
+- Gráfica de ventas y costos por los últimos 7 días.
+- Reporte PDF y exportación CSV.
+- Chart.js y jsPDF se cargan desde CDN; se requiere internet para esas funciones.
+
+La utilidad neta estimada se calcula como: ventas - costo de los productos vendidos - gastos registrados en el periodo. Para que los reportes sean correctos, registra gastos en la fecha en que correspondan y revisa que los costos unitarios estén actualizados.
+
+## Pruebas recomendadas
+1. Crea un producto de prueba: costo materiales $20, mano de obra $10, precio $50, stock 5.
+2. Registra una venta de 2 unidades a $50. Debe registrar $100 de venta y dejar 3 unidades.
+3. Intenta vender 4 unidades. Debe bloquearla porque solo quedan 3.
+4. Registra un gasto de $100 y revisa el panel.
+5. Descarga un PDF y un CSV.
+6. Prueba editar un producto y ajustar existencias.
+7. Verifica que el stock bajo aparezca cuando las existencias sean iguales o menores al mínimo.
+
+## No contiene todavía
+- Inicio de sesión real.
+- Sincronización entre dispositivos.
+- Separación segura de varios negocios en la nube.
+Esas funciones requieren configurar y probar un backend. No se simulan con un selector de usuario local porque no sería seguridad real.

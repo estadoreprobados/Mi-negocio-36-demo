@@ -1,20 +1,140 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#123b32">
-<title>Mi Primer Negocio 36</title><link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>Mi Primer Negocio 36</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
-<header class="topbar"><div class="logo">36</div><div><small>CBTIS No. 36 · CONTROL DE NEGOCIO</small><h1>Mi Primer Negocio</h1></div></header>
+<header class="topbar">
+  <div>
+    <p class="eyebrow">ADMINISTRACIÓN DE NEGOCIOS</p>
+    <h1>Mi Primer Negocio <span>36</span></h1>
+  </div>
+  <button id="exportCsvTop" class="button secondary">Exportar CSV</button>
+</header>
+
 <main class="container">
-<section class="hero"><div><small>TU NEGOCIO, EN ORDEN</small><h2>Administra tu negocio desde un solo lugar.</h2><p>Registra productos, gastos y ventas, y consulta tus resultados.</p></div><b>M36</b></section>
-<section class="stats"><article><span>Ventas totales</span><strong id="stat-sales">$0.00</strong></article><article><span>Ganancia neta</span><strong id="stat-net">$0.00</strong></article><article><span>Productos</span><strong id="stat-products">0</strong></article><article><span>Ventas registradas</span><strong id="stat-count">0</strong></article></section>
-<nav class="tabs"><button class="active" data-tab="productos">Productos</button><button data-tab="gastos">Gastos</button><button data-tab="ventas">Ventas</button><button data-tab="ganancias">Mi ganancia</button></nav>
-<section class="panel active" id="panel-productos"><h2>Productos</h2>
-<form id="product-form" class="form"><label>Nombre del producto<input id="product-name" required maxlength="80" placeholder="Ej. Pulsera artesanal"></label><label>Costo materiales ($)<input id="product-materials" type="number" min="0" step=".01" required></label><label>Mano de obra ($)<input id="product-labor" type="number" min="0" step=".01" required></label><label>Precio de venta ($)<input id="product-price" type="number" min="0" step=".01" required></label><button class="primary">+ Agregar producto</button></form>
-<div class="tablebox"><table><thead><tr><th>Producto</th><th>Materiales</th><th>Mano obra</th><th>Costo total</th><th>Precio venta</th><th>Ganancia/unidad</th><th></th></tr></thead><tbody id="products-table"></tbody></table><p class="empty" id="products-empty">Todavía no has agregado productos.</p></div></section>
-<section class="panel" id="panel-gastos"><h2>Gastos fijos</h2><form id="expense-form" class="form"><label>Concepto<input id="expense-name" required placeholder="Ej. Internet"></label><label>Monto ($)<input id="expense-amount" type="number" min="0" step=".01" required></label><button class="primary">+ Agregar gasto</button></form><div class="tablebox"><table><thead><tr><th>Concepto</th><th>Monto</th><th></th></tr></thead><tbody id="expenses-table"></tbody></table><p class="empty" id="expenses-empty">No hay gastos registrados.</p><p class="total">Total de gastos: <strong id="expense-total">$0.00</strong></p></div></section>
-<section class="panel" id="panel-ventas"><h2>Registrar una venta</h2><form id="sale-form" class="form"><label>Fecha<input id="sale-date" type="date" required></label><label>Producto<select id="sale-product" required><option value="">Primero agrega un producto</option></select></label><label>Cantidad<input id="sale-quantity" type="number" min="1" step="1" required value="1"></label><label>Precio por unidad ($)<input id="sale-price" type="number" min="0" step=".01" required></label><button class="primary">Registrar venta</button></form><div class="tablebox"><table><thead><tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total venta</th><th>Utilidad</th><th></th></tr></thead><tbody id="sales-table"></tbody></table><p class="empty" id="sales-empty">Todavía no has registrado ventas.</p></div></section>
-<section class="panel" id="panel-ganancias"><h2>Mi ganancia</h2><div class="finance"><article><span>Ventas totales</span><strong id="report-sales">$0.00</strong></article><article><span>Utilidad bruta</span><strong id="report-profit">$0.00</strong></article><article><span>Gastos fijos</span><strong id="report-expenses">$0.00</strong></article><article class="highlight"><span>Ganancia neta estimada</span><strong id="report-net">$0.00</strong></article></div><p class="note">La ganancia neta se calcula como utilidad de las ventas menos los gastos registrados. Los datos se guardan en este navegador, no se sincronizan automáticamente entre dispositivos.</p><div class="actions"><button id="export-csv" class="secondary">Exportar resumen CSV</button><button id="reset-data" class="danger">Borrar todos los datos</button></div></section>
-<footer>Mi Primer Negocio 36 · Prototipo escolar</footer></main><script src="app.js"></script>
-</body></html>
+  <div class="notice" id="storageNotice">Tus datos se guardan en este navegador. Esta versión aún no sincroniza entre dispositivos ni separa cuentas en la nube.</div>
+
+  <nav class="tabs" aria-label="Secciones">
+    <button class="tab active" data-view="dashboard">Resumen</button>
+    <button class="tab" data-view="products">Productos</button>
+    <button class="tab" data-view="sales">Ventas</button>
+    <button class="tab" data-view="expenses">Gastos</button>
+    <button class="tab" data-view="reports">Reportes</button>
+  </nav>
+
+  <section class="view" id="view-dashboard">
+    <div class="section-heading">
+      <div><p class="eyebrow">VISTA GENERAL</p><h2>Resumen del negocio</h2></div>
+      <label class="date-filter">Periodo
+        <select id="dashboardPeriod">
+          <option value="today">Hoy</option><option value="7" selected>Últimos 7 días</option>
+          <option value="30">Últimos 30 días</option><option value="all">Todo</option>
+        </select>
+      </label>
+    </div>
+    <div class="metrics">
+      <article class="metric"><span>Ventas</span><strong id="metricSales">$0.00</strong><small id="metricSalesSub">Ingresos registrados</small></article>
+      <article class="metric"><span>Costos de productos vendidos</span><strong id="metricCosts">$0.00</strong><small>Según costo unitario</small></article>
+      <article class="metric"><span>Utilidad bruta</span><strong id="metricGross">$0.00</strong><small>Ventas menos costo de venta</small></article>
+      <article class="metric"><span>Ganancia neta estimada</span><strong id="metricNet">$0.00</strong><small>Utilidad bruta menos gastos</small></article>
+    </div>
+    <div class="chart-grid">
+      <article class="panel"><div class="panel-title"><h3>Ventas y costos por día</h3><span class="muted">MXN</span></div><div class="chart-wrap"><canvas id="salesChart"></canvas></div></article>
+      <article class="panel"><div class="panel-title"><h3>Inventario</h3><span class="muted">Existencias actuales</span></div><div id="inventorySummary" class="inventory-summary"></div></article>
+    </div>
+    <article class="panel">
+      <div class="panel-title"><h3>Productos con poco inventario</h3><button class="text-button" data-goto="products">Ver productos</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Producto</th><th>Existencias</th><th>Mínimo</th><th>Estado</th></tr></thead><tbody id="lowStockRows"></tbody></table></div>
+    </article>
+  </section>
+
+  <section class="view hidden" id="view-products">
+    <div class="section-heading"><div><p class="eyebrow">CATÁLOGO</p><h2>Productos e inventario</h2></div></div>
+    <form id="productForm" class="panel form-grid">
+      <input type="hidden" id="productId">
+      <label>Nombre del producto<input id="productName" required maxlength="100" placeholder="Ej. Pulsera artesanal"></label>
+      <label>Costo de materiales ($)<input id="productMaterials" type="number" min="0" step="0.01" required placeholder="0.00"></label>
+      <label>Mano de obra por unidad ($)<input id="productLabor" type="number" min="0" step="0.01" required value="0"></label>
+      <label>Precio de venta ($)<input id="productPrice" type="number" min="0" step="0.01" required placeholder="0.00"></label>
+      <label>Existencias iniciales<input id="productStock" type="number" min="0" step="1" required value="0"></label>
+      <label>Stock mínimo<input id="productMinStock" type="number" min="0" step="1" required value="3"></label>
+      <div class="form-actions"><button class="button" type="submit" id="productSubmit">Agregar producto</button><button class="button secondary hidden" type="button" id="cancelProductEdit">Cancelar edición</button></div>
+    </form>
+    <article class="panel">
+      <div class="panel-title"><h3>Lista de productos</h3><input id="productSearch" class="search" placeholder="Buscar producto…"></div>
+      <div class="table-wrap"><table><thead><tr><th>Producto</th><th>Costo total</th><th>Precio</th><th>Ganancia/unidad</th><th>Existencias</th><th>Acciones</th></tr></thead><tbody id="productRows"></tbody></table></div>
+      <p class="muted footnote">La ganancia por unidad es una estimación: precio de venta menos materiales y mano de obra.</p>
+    </article>
+    <article class="panel">
+      <div class="panel-title"><h3>Movimiento de inventario</h3><span class="muted">Entradas, salidas o correcciones</span></div>
+      <form id="stockForm" class="form-grid compact">
+        <label>Producto<select id="stockProduct" required></select></label>
+        <label>Tipo<select id="stockType"><option value="in">Entrada</option><option value="out">Salida / pérdida</option><option value="set">Ajustar existencias a</option></select></label>
+        <label>Cantidad<input id="stockQty" type="number" min="1" step="1" required></label>
+        <label>Motivo<input id="stockReason" maxlength="120" placeholder="Compra, daño, conteo…"></label>
+        <div class="form-actions"><button class="button" type="submit">Registrar movimiento</button></div>
+      </form>
+      <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Producto</th><th>Movimiento</th><th>Cantidad</th><th>Motivo</th></tr></thead><tbody id="stockRows"></tbody></table></div>
+    </article>
+  </section>
+
+  <section class="view hidden" id="view-sales">
+    <div class="section-heading"><div><p class="eyebrow">OPERACIONES</p><h2>Registrar una venta</h2></div></div>
+    <form id="saleForm" class="panel form-grid">
+      <label>Producto<select id="saleProduct" required></select></label>
+      <label>Cantidad<input id="saleQty" type="number" min="1" step="1" required value="1"></label>
+      <label>Precio por unidad ($)<input id="salePrice" type="number" min="0" step="0.01" required></label>
+      <label>Fecha<input id="saleDate" type="date" required></label>
+      <div class="sale-preview"><span>Existencias disponibles</span><strong id="saleStock">—</strong><span>Total de la venta</span><strong id="saleTotal">$0.00</strong></div>
+      <div class="form-actions"><button class="button" type="submit">Registrar venta</button></div>
+    </form>
+    <article class="panel"><div class="panel-title"><h3>Historial de ventas</h3></div>
+      <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>Precio unitario</th><th>Total</th><th>Acción</th></tr></thead><tbody id="saleRows"></tbody></table></div>
+    </article>
+  </section>
+
+  <section class="view hidden" id="view-expenses">
+    <div class="section-heading"><div><p class="eyebrow">EGRESOS</p><h2>Gastos del negocio</h2></div></div>
+    <form id="expenseForm" class="panel form-grid compact">
+      <label>Concepto<input id="expenseName" required maxlength="100" placeholder="Ej. Internet, empaque"></label>
+      <label>Monto ($)<input id="expenseAmount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+      <label>Fecha<input id="expenseDate" type="date" required></label>
+      <label>Tipo<select id="expenseType"><option value="fixed">Gasto fijo</option><option value="variable">Gasto variable</option></select></label>
+      <div class="form-actions"><button class="button" type="submit">Agregar gasto</button></div>
+    </form>
+    <article class="panel"><div class="panel-title"><h3>Gastos registrados</h3><strong id="expenseTotal">$0.00</strong></div>
+      <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Monto</th><th>Acción</th></tr></thead><tbody id="expenseRows"></tbody></table></div>
+    </article>
+  </section>
+
+  <section class="view hidden" id="view-reports">
+    <div class="section-heading"><div><p class="eyebrow">ANÁLISIS</p><h2>Reportes del negocio</h2></div></div>
+    <article class="panel report-controls">
+      <label>Desde<input id="reportFrom" type="date"></label>
+      <label>Hasta<input id="reportTo" type="date"></label>
+      <button class="button" id="generatePdf" type="button">Descargar reporte PDF</button>
+      <button class="button secondary" id="exportCsv" type="button">Exportar CSV</button>
+    </article>
+    <div class="metrics report-metrics">
+      <article class="metric"><span>Ingresos</span><strong id="reportSales">$0.00</strong></article>
+      <article class="metric"><span>Costos de venta</span><strong id="reportCosts">$0.00</strong></article>
+      <article class="metric"><span>Gastos</span><strong id="reportExpenses">$0.00</strong></article>
+      <article class="metric"><span>Ganancia neta estimada</span><strong id="reportNet">$0.00</strong></article>
+    </div>
+    <article class="panel"><div class="panel-title"><h3>Resumen por producto</h3></div>
+      <div class="table-wrap"><table><thead><tr><th>Producto</th><th>Unidades vendidas</th><th>Ingresos</th><th>Utilidad bruta</th></tr></thead><tbody id="reportProductRows"></tbody></table></div>
+    </article>
+  </section>
+  <footer>Mi Primer Negocio 36 · Herramienta de apoyo para proyectos escolares</footer>
+</main>
+<div id="toast" role="status" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>
